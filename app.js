@@ -40,36 +40,21 @@ app.use(session({
   store: new FileStore()
 }));
 
-function auth(req, res, next) {
-  var reqHeaderAuth = req.headers.authorization;
+app.use('/', indexRouter);
+app.use('/users', usersRouter);
 
+function auth(req, res, next) {
   if (!req.session.user) {
-    if (!reqHeaderAuth) {
       var error = new Error('You are not authenticated')
       res.setHeader('WWW-Authenticate', 'Basic');
       error.statusCode = 401;
       return next(error);
-    }
-    var auth = new Buffer.from(reqHeaderAuth.split(' ')[1], 'base64').toString().split(':');
-    var username = auth[0];
-    var password = auth[1];
-  
-    if (username === 'admin' && password === 'password') {
-      //res.cookie('user', 'admin', { signed: true });
-      req.session.user = 'admin';
-      next();
-    } else {
-      var error = new Error('You are not authenticated')
-      res.setHeader('WWW-Authenticate', 'Basic');
-      error.statusCode = 401;
-      return next(error);
-    }
   } else {
-    if (req.session.user === 'admin') {
+    if (req.session.user === 'authenticated') {
       next();
     } else {
       var error = new Error('You are not authenticated')
-      error.statusCode = 401;
+      error.statusCode = 403;
       return next(error);
     }
   }
@@ -79,8 +64,6 @@ app.use(auth);
 
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.use('/', indexRouter);
-app.use('/users', usersRouter);
 app.use('/dishes', disheRouter);
 app.use('/promotions', promoRouter);
 app.use('/leaders', leaderRouter);
