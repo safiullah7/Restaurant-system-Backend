@@ -17,7 +17,8 @@ var leaderRouter = require('./routes/leaderRouter');
 var mongoose = require('mongoose');
 
 var Dishes = require('./models/dishes');
-var url = 'mongodb://localhost:27017/conFusion';
+const config = require('./config');
+var url = config.mongoUrl;
 
 mongoose.connect(url)
   .then((db) => {
@@ -34,31 +35,19 @@ app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 //app.use(cookieParser('super-secret-key'));
-app.use(session({
-  name: 'session-id',
-  secret: 'super-secret-key',
-  saveUninitialized: false,
-  resave: false,
-  store: new FileStore()
-}));
+// app.use(session({
+//   name: 'session-id',
+//   secret: 'super-secret-key',
+//   saveUninitialized: false,
+//   resave: false,
+//   store: new FileStore()
+// }));
 
 app.use(passport.initialize());
-app.use(passport.session());
+// app.use(passport.session());
 
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
-
-function auth(req, res, next) {
-  if (!req.user) {
-    var err = new Error('You are not authenticated!');
-    err.status = 403;
-    next(err);
-  } else {
-    next();
-  }
-}
-
-app.use(auth);
 
 app.use(express.static(path.join(__dirname, 'public')));
 
